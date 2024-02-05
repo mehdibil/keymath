@@ -109,30 +109,26 @@ int main(int argc, char **argv)  {
             Point_Addition(&A, &B, &C);
 
             // Ensure that the result is greater than or equal to the constant public key
-            if (mpz_cmp(C.x, G.x) < 0) {
-                mpz_set(C.x, G.x);
-            }
-            if (mpz_cmp(C.y, G.y) < 0) {
-                mpz_set(C.y, G.y);
-            }
+        if (mpz_cmp(C.x, G.x) < 0 || (mpz_cmp(C.x, G.x) == 0 && mpz_cmp(C.y, G.y) < 0)) {
+            mpz_set(C.x, G.x);
+            mpz_set(C.y, G.y);
+        }
 
         break;
-        case '-':
-            if(FLAG_NUMBER)    {
-                Scalar_Multiplication(G, &B, number);
-            }
-            Point_Negation(&B, &C);
-            mpz_set(B.x, C.x);
-            mpz_set(B.y, C.y);
-            Point_Addition(&A, &B, &C);
+    case '-':
+        if(FLAG_NUMBER)    {
+            Scalar_Multiplication(G, &B, number);
+        }
+        Point_Negation(&B, &C);
+        mpz_set(B.x, C.x);
+        mpz_set(B.y, C.y);
+        Point_Addition(&A, &B, &C);
 
-            // Ensure that the result is greater than or equal to the constant public key
-            if (mpz_cmp(C.x, G.x) < 0) {
-                mpz_set(C.x, G.x);
-            }
-            if (mpz_cmp(C.y, G.y) < 0) {
-                mpz_set(C.y, G.y);
-            }
+        // Ensure that the result is greater than or equal to the constant public key
+        if (mpz_cmp(C.x, G.x) < 0 || (mpz_cmp(C.x, G.x) == 0 && mpz_cmp(C.y, G.y) < 0)) {
+            mpz_set(C.x, G.x);
+            mpz_set(C.y, G.y);
+        }
 
         break;
         case '/':

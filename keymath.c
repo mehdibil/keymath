@@ -33,7 +33,7 @@ const char *EC_constant_Gy = "483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c
 
 const char *min_public_key_x = "0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
 mpz_t min_public_key;
-mpz_init_set_str(min_public_key, "0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798", 16);
+mpz_init_set_str(min_public_key,"0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798", 16);
 
 
 

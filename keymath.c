@@ -193,12 +193,13 @@ void set_publickey(char *param, struct Point *publickey)  {
     }
 
    // Check if the public key is within the specified range
-    if ((mpz_cmp(publickey->x, EC_constant_min_publickey_mpz) <= 0 ||
-         mpz_cmp(publickey->x, EC_constant_max_publickey_mpz) >= 0) &&
-        (len != 66 || (len == 66 && dest[0] != '0' && dest[1] != '2'))) {
-        fprintf(stderr, "[E] Public key is outside the allowed range\n");
-        exit(0);
-    }
+if ((mpz_cmp(publickey->x, EC_constant_min_publickey_mpz) < 0 ||
+     mpz_cmp(publickey->x, EC_constant_max_publickey_mpz) > 0) &&
+    (len != 66 || (len == 66 && dest[0] != '0' && dest[1] != '2'))) {
+    fprintf(stderr, "[E] Public key is outside the allowed range\n");
+    exit(0);
+}
+
 
     if (mpz_cmp_ui(publickey->y, 0) == 0)  {
         mpz_t mpz_aux, mpz_aux2, Ysquared;

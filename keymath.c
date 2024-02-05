@@ -172,23 +172,11 @@ int main(int argc, char **argv) {
     }
 
     printf("Result: %s\n\n", str_publickey);
-
-    void cleanup() {
-    mpz_clear(EC.p);
-    mpz_clear(EC.n);
-    mpz_clear(G.x);
-    mpz_clear(G.y);
-
-    mpz_clear(A.x);
-    mpz_clear(A.y);
-    mpz_clear(B.x);
-    mpz_clear(B.y);
-    mpz_clear(C.x);
-    mpz_clear(C.y);
-
-    mpz_clear(number);
-    mpz_clear(inversemultiplier);
+	
+    cleanup();
+    return 0;
 }
+
 
 void generate_strpublickey(struct Point *publickey,bool compress,char *dst)	{
 	memset(dst,0,131);

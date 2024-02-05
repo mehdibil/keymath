@@ -34,7 +34,14 @@ const char *EC_constant_Gy = "483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c
 
 mpz_t min_public_key; // Declare the MPZ variable
 const char *min_public_key_x = "0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
-mpz_init_set_str(min_public_key, min_public_key_x, 16); // Use the variable in the function call
+int main(int argc, char **argv)  {
+    // ...
+
+    // Move the initialization inside the main function
+    mpz_init_set_str(min_public_key, min_public_key_x, 16); // Use the variable in the function call
+
+    // ...
+}
 
 
 

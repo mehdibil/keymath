@@ -26,14 +26,14 @@ struct Point G;
 struct Point DoublingG[256];
 
 const char *version = "0.1.211009";
-const char *EC_constant_N = "000000000000000000000000000000000000000000000000000000000000004c";
+const char *EC_constant_N = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141";
 const char *EC_constant_P = "fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f";
 const char *EC_constant_Gx = "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
 const char *EC_constant_Gy = "483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8";
 
 
 mpz_t min_public_key; // Declare the MPZ variable
-const char *min_public_key_x = "0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
+const char *max_public_key_x = "0296516a8f65774275278d0d7420a88df0ac44bd64c7bae07c3fe397c5b3300b23";
 
 
 const char *formats[3] = {"publickey","rmd160","address"};
@@ -154,7 +154,7 @@ int main(int argc, char **argv)  {
 	generate_strpublickey(&C,true,str_publickey);
 	printf("Result: %s\n\n",str_publickey);	
 // Free allocated memory before exiting
-    mpz_clear(min_public_key);
+    mpz_clear(max_public_key);
 
     return 0;
 }

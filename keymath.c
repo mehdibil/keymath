@@ -1,3 +1,10 @@
+/*
+Developed by Luis Alberto
+email: alberto.bsd@gmail.com
+gcc -o keymath keymath.c -lgmp
+*/
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -24,11 +31,16 @@ const char *EC_constant_P = "fffffffffffffffffffffffffffffffffffffffffffffffffff
 const char *EC_constant_Gx = "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
 const char *EC_constant_Gy = "483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8";
 
-const char *formats[3] = {"publickey", "rmd160", "address"};
-const char *looks[2] = {"compress", "uncompress"};
+const char *min_public_key_x = "0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
+mpz_t min_public_key;
+mpz_init_set_str(min_public_key, min_public_key_x, 16);
 
-void set_publickey(char *param, struct Point *publickey);
-void generate_strpublickey(struct Point *publickey, bool compress, char *dst);
+
+const char *formats[3] = {"publickey","rmd160","address"};
+const char *looks[2] = {"compress","uncompress"};
+
+void set_publickey(char *param,struct Point *publickey);
+void generate_strpublickey(struct Point *publickey,bool compress,char *dst);
 void Scalar_Multiplication_custom(struct Point P, struct Point *R, mpz_t m);
 
 char *str_output = NULL;
@@ -39,52 +51,49 @@ char str_publickey[132];
 char str_rmd160[41];
 char str_address[41];
 
-struct Point A, B, C;
+struct Point A,B,C;
 
 int FLAG_NUMBER = 0;
 
-mpz_t inversemultiplier, number;
+mpz_t inversemultiplier,number;
 
-// Minimum public key limit (in hexadecimal string format)
-const char *minimum_pubkey_limit = "0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798"; // Replace with your desired limit
+int main(int argc, char **argv)  {
+	char buffer_input[1024];
+	mpz_init_set_str(EC.p, EC_constant_P, 16);
+	mpz_init_set_str(EC.n, EC_constant_N, 16);
+	mpz_init_set_str(G.x , EC_constant_Gx, 16);
+	mpz_init_set_str(G.y , EC_constant_Gy, 16);
+	init_doublingG(&G);
 
-int main(int argc, char **argv) {
-    char buffer_input[1024];
-    mpz_init_set_str(EC.p, EC_constant_P, 16);
-    mpz_init_set_str(EC.n, EC_constant_N, 16);
-    mpz_init_set_str(G.x, EC_constant_Gx, 16);
-    mpz_init_set_str(G.y, EC_constant_Gy, 16);
-    init_doublingG(&G);
 
-    mpz_init_set_ui(A.x, 0);
-    mpz_init_set_ui(A.y, 0);
+	mpz_init_set_ui(A.x,0);
+	mpz_init_set_ui(A.y,0);
 
-    mpz_init_set_ui(B.x, 0);
-    mpz_init_set_ui(B.y, 0);
+	mpz_init_set_ui(B.x,0);
+	mpz_init_set_ui(B.y,0);
 
-    mpz_init_set_ui(C.x, 0);
-    mpz_init_set_ui(C.y, 0);
-
-    mpz_init(number);
-    mpz_init(inversemultiplier);
-
-    if (argc < 4) {
-        printf("Missing parameters\n");
-        exit(0);
-    }
-
-    switch (strlen(argv[1])) {
-        case 66:
-        case 130:
-            set_publickey(argv[1], &A);
-            break;
-        default:
-            printf("Unknown publickey length\n");
-            exit(0);
-            break;
-    }
-
-    switch(strlen(argv[3]))	{
+	mpz_init_set_ui(C.x,0);
+	mpz_init_set_ui(C.y,0);
+	
+	mpz_init(number);
+	mpz_init(inversemultiplier);
+	
+	if(argc < 4)	{
+		printf("Missing parameters\n");
+		exit(0);
+	}
+	
+	switch(strlen(argv[1]))	{
+		case 66:
+		case 130:
+			set_publickey(argv[1],&A);
+		break;
+		default:
+			printf("unknow publickey length\n");
+			exit(0);
+		break;
+	}
+	switch(strlen(argv[3]))	{
 		case 66:
 			if(argv[3][0] == '0' && argv[3][1] == 'x')	{
 				mpz_set_str(number,argv[3],0);
@@ -246,6 +255,11 @@ void Scalar_Multiplication_custom(struct Point P, struct Point *R, mpz_t m)  {
   		mpz_set(T.y, R->y);
   		if(mpz_tstbit(m, loop))
   			Point_Addition(&T, &Q, R);
+		// **Add the check here:**
+            if (mpz_cmp(R->x, min_public_key) < 0) {
+                printf("Error: Resulting public key is below the minimum limit.\n");
+                exit(1);  // Or adjust R as needed
+            }
   	}
   }
 	mpz_clear(Q.x);

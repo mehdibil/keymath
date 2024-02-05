@@ -24,7 +24,6 @@ const char *EC_constant_P = "fffffffffffffffffffffffffffffffffffffffffffffffffff
 const char *EC_constant_Gx = "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
 const char *EC_constant_Gy = "483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8";
 
-
 const char *formats[3] = {"publickey","rmd160","address"};
 const char *looks[2] = {"compress","uncompress"};
 
@@ -104,6 +103,12 @@ int main(int argc, char **argv)  {
         break;
     }
     mpz_mod(number,number,EC.n);
+    
+    // Define the target public key
+    struct Point Target;
+    mpz_init_set_str(Target.x, "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798", 16);
+    mpz_init_set_str(Target.y, "483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8", 16);
+
     switch(argv[2][0])    {
         case '+':
             if(FLAG_NUMBER)    {
@@ -114,13 +119,13 @@ int main(int argc, char **argv)  {
         break;
         case '-':
             if(FLAG_NUMBER)    {
-                Scalar_Subtraction_Until_Target(G, &B, A);
+                Scalar_Subtraction_Until_Target(G, &B, Target);
             }
             else {
-                Point_Negation(&B,&C);
-                mpz_set(B.x,C.x);
-                mpz_set(B.y,C.y);
-                Point_Addition(&A,&B,&C);
+                Point_Negation(&B, &C);
+                mpz_set(B.x, C.x);
+                mpz_set(B.y, C.y);
+                Point_Addition(&A, &B, &C);
             }
         break;
         case '/':
@@ -143,10 +148,14 @@ int main(int argc, char **argv)  {
             }
         break;
     }
-    generate_strpublickey(&C,true,str_publickey);
-    printf("Result: %s\n\n",str_publickey);
 
-    // ...
+    generate_strpublickey(&C, true, str_publickey);
+    printf("Result: %s\n\n", str_publickey);
+
+    mpz_clear(Target.x);
+    mpz_clear(Target.y);
+
+    // ... (existing code)
 
     return 0;
 }

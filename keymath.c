@@ -45,20 +45,15 @@ int FLAG_NUMBER = 0;
 
 mpz_t inversemultiplier, number;
 
-int is_within_range(const char *key) {
-    if (strcmp(key, "0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798") < 0 ||
-        strcmp(key, "02e0a8b039282faf6fe0fd769cfbc4b6b4cf8758ba68220eac420e32b91ddfa673") > 0) {
-        return 0;
-    }
-    return 1;
-}
+// Minimum public key limit (in hexadecimal string format)
+const char *minimum_pubkey_limit = "0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798"; // Replace with your desired limit
 
-int main(int argc, char **argv)  {
+int main(int argc, char **argv) {
     char buffer_input[1024];
     mpz_init_set_str(EC.p, EC_constant_P, 16);
     mpz_init_set_str(EC.n, EC_constant_N, 16);
-    mpz_init_set_str(G.x , EC_constant_Gx, 16);
-    mpz_init_set_str(G.y , EC_constant_Gy, 16);
+    mpz_init_set_str(G.x, EC_constant_Gx, 16);
+    mpz_init_set_str(G.y, EC_constant_Gy, 16);
     init_doublingG(&G);
 
     mpz_init_set_ui(A.x, 0);
@@ -78,194 +73,16 @@ int main(int argc, char **argv)  {
         exit(0);
     }
 
-    // Check if the first public key is within the specified range
-    if (!is_within_range(argv[1])) {
-        printf("Error: First public key is not within the specified range.\n");
-        exit(0);
-    }
-
-    // Check if the second public key or scalar number is within the specified range
-    if (argc > 3 && !is_within_range(argv[3])) {
-        printf("Error: Second public key or scalar number is not within the specified range.\n");
-        exit(0);
-    }
-
     switch (strlen(argv[1])) {
         case 66:
         case 130:
             set_publickey(argv[1], &A);
-        break;
+            break;
         default:
-            printf("Unknown public key length\n");
+            printf("Unknown publickey length\n");
             exit(0);
-        break;
+            break;
     }
 
     switch (strlen(argv[3])) {
-        case 66:
-            if (argv[3][0] == '0' && argv[3][1] == 'x') {
-                mpz_set_str(number, argv[3], 0);
-                FLAG_NUMBER = 1;
-            } else {
-                set_publickey(argv[3], &B);
-                FLAG_NUMBER = 0;
-            }
-        break;
-        case 130:
-            set_publickey(argv[3], &B);
-            FLAG_NUMBER = 0;
-        break;
-        default:
-            mpz_set_str(number, argv[3], 0);
-            FLAG_NUMBER = 1;
-        break;
-    }
-
-    mpz_mod(number, number, EC.n);
-
-    switch (argv[2][0]) {
-        case '+':
-            if (FLAG_NUMBER) {
-                Scalar_Multiplication(G, &B, number);
-            }
-            Point_Addition(&A, &B, &C);
-        break;
-        case '-':
-            if (FLAG_NUMBER) {
-                Scalar_Multiplication(G, &B, number);
-            }
-            Point_Negation(&B, &C);
-            mpz_set(B.x, C.x);
-            mpz_set(B.y, C.y);
-            Point_Addition(&A, &B, &C);
-        break;
-        case '/':
-            if (!FLAG_NUMBER) {
-                printf("We don't know how to divide 2 publickeys, we need an escalar number\n");
-                exit(0);
-            } else {
-                mpz_invert(inversemultiplier, number, EC.n);
-                Scalar_Multiplication_custom(A, &C, inversemultiplier);
-            }
-        break;
-        case 'x':
-            if (!FLAG_NUMBER) {
-                printf("We don't know how to multiply 2 publickeys, we need an escalar number\n");
-                exit(0);
-            } else {
-                Scalar_Multiplication_custom(A, &C, number);
-            }
-		
-        break;		
-	}
-	generate_strpublickey(&C,true,str_publickey);
-	printf("Result: %s\n\n",str_publickey);	
-}
-
-void generate_strpublickey(struct Point *publickey,bool compress,char *dst)	{
-	memset(dst,0,131);
-	if(compress)	{
-		if(mpz_tstbit(publickey->y, 0) == 0)	{	// Even
-			gmp_snprintf (dst,67,"02%0.64Zx",publickey->x);
-		}
-		else	{
-			gmp_snprintf(dst,67,"03%0.64Zx",publickey->x);
-		}
-	}
-	else	{
-		gmp_snprintf(dst,131,"04%0.64Zx%0.64Zx",publickey->x,publickey->y);
-	}
-}
-
-void set_publickey(char *param,struct Point *publickey)	{
-	char hexvalue[65];
-	char *dest;
-	int len;
-	len = strlen(param);
-	dest = (char*) calloc(len+1,1);
-	if(dest == NULL)	{
-		fprintf(stderr,"[E] Error calloc\n");
-		exit(0);
-	}
-	memset(hexvalue,0,65);
-	memcpy(dest,param,len);
-	trim(dest," \t\n\r");
-	len = strlen(dest);
-	switch(len)	{
-		case 66:
-			mpz_set_str(publickey->x,dest+2,16);
-		break;
-		case 130:
-			memcpy(hexvalue,dest+2,64);
-			mpz_set_str(publickey->x,hexvalue,16);
-			memcpy(hexvalue,dest+66,64);
-			mpz_set_str(publickey->y,hexvalue,16);
-		break;
-	}
-	if(mpz_cmp_ui(publickey->y,0) == 0)	{
-		mpz_t mpz_aux,mpz_aux2,Ysquared;
-		mpz_init(mpz_aux);
-		mpz_init(mpz_aux2);
-		mpz_init(Ysquared);
-		mpz_pow_ui(mpz_aux,publickey->x,3);
-		mpz_add_ui(mpz_aux2,mpz_aux,7);
-		mpz_mod(Ysquared,mpz_aux2,EC.p);
-		mpz_add_ui(mpz_aux,EC.p,1);
-		mpz_fdiv_q_ui(mpz_aux2,mpz_aux,4);
-		mpz_powm(publickey->y,Ysquared,mpz_aux2,EC.p);
-		mpz_sub(mpz_aux, EC.p,publickey->y);
-		switch(dest[1])	{
-			case '2':
-				if(mpz_tstbit(publickey->y, 0) == 1)	{
-					mpz_set(publickey->y,mpz_aux);
-				}
-			break;
-			case '3':
-				if(mpz_tstbit(publickey->y, 0) == 0)	{
-					mpz_set(publickey->y,mpz_aux);
-				}
-			break;
-			default:
-				fprintf(stderr,"[E] Some invalid bit in the publickey: %s\n",dest);
-				exit(0);
-			break;
-		}
-		mpz_clear(mpz_aux);
-		mpz_clear(mpz_aux2);
-		mpz_clear(Ysquared);
-	}
-	free(dest);
-}
-
-void Scalar_Multiplication_custom(struct Point P, struct Point *R, mpz_t m)  {
-	struct Point Q, T;
-	long no_of_bits, loop;
-	mpz_init(Q.x);
-	mpz_init(Q.y);
-	mpz_init(T.x);
-	mpz_init(T.y);
-	no_of_bits = mpz_sizeinbase(m, 2);
-	mpz_set_ui(R->x, 0);
-	mpz_set_ui(R->y, 0);
-	if(mpz_cmp_ui(m, 0) != 0)  {
-  	mpz_set(Q.x, P.x);
-  	mpz_set(Q.y, P.y);
-  	if(mpz_tstbit(m, 0) == 1){
-  		mpz_set(R->x, P.x);
-  		mpz_set(R->y, P.y);
-  	}
-  	for(loop = 1; loop < no_of_bits; loop++) {
-  		Point_Doubling(&Q, &T);
-  		mpz_set(Q.x, T.x);
-  		mpz_set(Q.y, T.y);
-  		mpz_set(T.x, R->x);
-  		mpz_set(T.y, R->y);
-  		if(mpz_tstbit(m, loop))
-  			Point_Addition(&T, &Q, R);
-  	}
-  }
-	mpz_clear(Q.x);
-  mpz_clear(Q.y);
-	mpz_clear(T.x);
-  mpz_clear(T.y);
-}
+        case 6

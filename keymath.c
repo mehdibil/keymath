@@ -24,8 +24,8 @@ const char *EC_constant_P = "fffffffffffffffffffffffffffffffffffffffffffffffffff
 const char *EC_constant_Gx = "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
 const char *EC_constant_Gy = "483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8";
 
-const char *formats[3] = {"publickey","rmd160","address"};
-const char *looks[2] = {"compress","uncompress"};
+const char *formats[3] = {"publickey", "rmd160", "address"};
+const char *looks[2] = {"compress", "uncompress"};
 
 void set_publickey(char *param, struct Point *publickey);
 void generate_strpublickey(struct Point *publickey, bool compress, char *dst);
@@ -45,6 +45,14 @@ int FLAG_NUMBER = 0;
 
 mpz_t inversemultiplier, number;
 
+int is_within_range(const char *key) {
+    if (strcmp(key, "0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798") < 0 ||
+        strcmp(key, "02e0a8b039282faf6fe0fd769cfbc4b6b4cf8758ba68220eac420e32b91ddfa673") > 0) {
+        return 0;
+    }
+    return 1;
+}
+
 int main(int argc, char **argv)  {
     char buffer_input[1024];
     mpz_init_set_str(EC.p, EC_constant_P, 16);
@@ -53,44 +61,112 @@ int main(int argc, char **argv)  {
     mpz_init_set_str(G.y , EC_constant_Gy, 16);
     init_doublingG(&G);
 
-    mpz_init_set_ui(A.x,0);
-    mpz_init_set_ui(A.y,0);
+    mpz_init_set_ui(A.x, 0);
+    mpz_init_set_ui(A.y, 0);
 
-    mpz_init_set_ui(B.x,0);
-    mpz_init_set_ui(B.y,0);
+    mpz_init_set_ui(B.x, 0);
+    mpz_init_set_ui(B.y, 0);
 
-    mpz_init_set_ui(C.x,0);
-    mpz_init_set_ui(C.y,0);
+    mpz_init_set_ui(C.x, 0);
+    mpz_init_set_ui(C.y, 0);
 
     mpz_init(number);
     mpz_init(inversemultiplier);
 
-    if(argc < 4)    {
+    if (argc < 4) {
         printf("Missing parameters\n");
         exit(0);
     }
 
-    // Check if the provided public keys are within the specified range
-    if (strcmp(argv[1], "0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798") < 0 ||
-        strcmp(argv[1], "02e0a8b039282faf6fe0fd769cfbc4b6b4cf8758ba68220eac420e32b91ddfa673") > 0) {
+    // Check if the first public key is within the specified range
+    if (!is_within_range(argv[1])) {
         printf("Error: First public key is not within the specified range.\n");
         exit(0);
     }
 
-    if (strcmp(argv[3], "0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798") < 0 ||
-        strcmp(argv[3], "02e0a8b039282faf6fe0fd769cfbc4b6b4cf8758ba68220eac420e32b91ddfa673") > 0) {
-        printf("Error: Second public key is not within the specified range.\n");
+    // Check if the second public key or scalar number is within the specified range
+    if (argc > 3 && !is_within_range(argv[3])) {
+        printf("Error: Second public key or scalar number is not within the specified range.\n");
         exit(0);
     }
 
-    switch(strlen(argv[1]))    {
+    switch (strlen(argv[1])) {
         case 66:
         case 130:
-            set_publickey(argv[1],&A);
+            set_publickey(argv[1], &A);
         break;
         default:
             printf("Unknown public key length\n");
             exit(0);
+        break;
+    }
+
+    switch (strlen(argv[3])) {
+        case 66:
+            if (argv[3][0] == '0' && argv[3][1] == 'x') {
+                mpz_set_str(number, argv[3], 0);
+                FLAG_NUMBER = 1;
+            } else {
+                set_publickey(argv[3], &B);
+                FLAG_NUMBER = 0;
+            }
+        break;
+        case 130:
+            set_publickey(argv[3], &B);
+            FLAG_NUMBER = 0;
+        break;
+        default:
+            mpz_set_str(number, argv[3], 0);
+            FLAG_NUMBER = 1;
+        break;
+    }
+
+    mpz_mod(number, number, EC.n);
+
+    switch (argv[2][0]) {
+        case '+':
+            if (FLAG_NUMBER) {
+                Scalar_Multiplication(G, &B, number);
+            }
+            Point_Addition(&A, &B, &C);
+        break;
+        case '-':
+            if (FLAG_NUMBER) {
+                Scalar_Multiplication(G, &B, number);
+            }
+            Point_Negation(&B, &C);
+            mpz_set(B.x, C.x);
+            mpz_set(B.y, C.y);
+            Point_Addition(&A, &B, &C);
+        break;
+        case '/':
+            if (!FLAG_NUMBER) {
+                printf("We don't know how to divide 2 publickeys, we need an escalar number\n");
+                exit(0);
+            } else {
+                mpz_invert(inversemultiplier, number, EC.n);
+                Scalar_Multiplication_custom(A, &C, inversemultiplier);
+            }
+        break;
+        case 'x':
+            if (!FLAG_NUMBER) {
+                printf("We don't know how to multiply 2 publickeys, we need an escalar number\n");
+                exit(0);
+            } else {
+                Scalar_Multiplication_custom(A, &C, number);
+            }
+        break;
+    }
+
+    // Check if the result of the operation is within the specified range
+    if (!is_within_range(str_publickey)) {
+        printf("Error: Result is not within the specified range.\n");
+        exit(0);
+    }
+
+    generate_strpublickey(&C, true, str_publickey);
+    printf("Result: %s\n\n", str_publickey);
+}
         break;
     }
     switch(strlen(argv[3]))    {

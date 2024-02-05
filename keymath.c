@@ -27,6 +27,10 @@ const char *EC_constant_Gy = "483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c
 const char *formats[3] = {"publickey","rmd160","address"};
 const char *looks[2] = {"compress","uncompress"};
 
+
+mpz_t EC_constant_min_publickey_mpz;
+mpz_t EC_constant_max_publickey_mpz;
+
 const char *EC_constant_min_publickey = "0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
 const char *EC_constant_max_publickey = "0296516a8f65774275278d0d7420a88df0ac44bd64c7bae07c3fe397c5b3300b23";
 
@@ -54,6 +58,8 @@ int main(int argc, char **argv)  {
     mpz_init_set_str(EC.n, EC_constant_N, 16);
     mpz_init_set_str(G.x, EC_constant_Gx, 16);
     mpz_init_set_str(G.y, EC_constant_Gy, 16);
+    mpz_init_set_str(EC_constant_min_publickey_mpz, EC_constant_min_publickey, 16);
+    mpz_init_set_str(EC_constant_max_publickey_mpz, EC_constant_max_publickey, 16);
     init_doublingG(&G);
 
     mpz_init_set_ui(A.x, 0);

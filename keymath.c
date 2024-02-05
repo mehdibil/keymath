@@ -105,26 +105,31 @@ int main(int argc, char **argv) {
 }
 
 void Scalar_Subtraction_Until_Target(struct Point P, struct Point *R, struct Point Target) {
-    mpz_t m;
-    mpz_init(m);
-    mpz_set_ui(m, 0);
+    mpz_init_set_ui(R->x, 0);
+    mpz_init_set_ui(R->y, 0);
+
+    mpz_t scalar;
+    mpz_init(scalar);
 
     int iterations = 0;
 
     while (!Point_Equals(R, &Target)) {
-        Scalar_Multiplication_custom(P, R, m);
+        Point_Subtraction(&P, R, &A);
+        mpz_invert(scalar, A.x, EC.p);
+        Scalar_Multiplication_custom(A, &A, scalar);
+        Point_Addition(&A, R, R);
         iterations++;
 
-        // Print intermediate results
-        gmp_printf("Iteration %d: Scalar = %ld, Result = (%Zd, %Zd)\n", iterations, mpz_get_ui(m), R->x, R->y);
-
-        // Increment the scalar value for the next iteration
-        mpz_add_ui(m, m, 1);
+        if (iterations > 10000) {  // Avoid infinite loops
+            printf("No solution found.\n");
+            break;
+        }
     }
 
-    printf("Target public key reached in %d iterations with scalar value %ld.\n", iterations, mpz_get_ui(m));
+    gmp_printf("Target public key reached in %d iterations with scalar value %Zd.\n", iterations, scalar);
 
-    mpz_clear(m);
+    mpz_clear(scalar);
+        
 }
 
 void generate_strpublickey(struct Point *publickey, bool compress, char *dst) {
@@ -230,5 +235,5 @@ void Scalar_Multiplication_custom(struct Point P, struct Point *R, mpz_t m) {
     mpz_clear(Q.x);
     mpz_clear(Q.y);
     mpz_clear(T.x);
-    mpz_clear(T.y);
+        mpz_clear(T.y);
 }

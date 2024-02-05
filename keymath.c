@@ -155,75 +155,7 @@ int main(int argc, char **argv)  {
             } else {
                 Scalar_Multiplication_custom(A, &C, number);
             }
-        break;
-    }
-
-    // Check if the result of the operation is within the specified range
-    if (!is_within_range(str_publickey)) {
-        printf("Error: Result is not within the specified range.\n");
-        exit(0);
-    }
-
-    generate_strpublickey(&C, true, str_publickey);
-    printf("Result: %s\n\n", str_publickey);
-}
-        break;
-    }
-    switch(strlen(argv[3]))    {
-        case 66:
-            if(argv[3][0] == '0' && argv[3][1] == 'x')    {
-                mpz_set_str(number,argv[3],0);
-                FLAG_NUMBER = 1;
-            }
-            else    {
-                set_publickey(argv[3],&B);
-                FLAG_NUMBER = 0;
-            }
-        break;
-        case 130:
-            set_publickey(argv[3],&B);
-            FLAG_NUMBER = 0;
-        break;
-        default:
-            mpz_set_str(number,argv[3],0);
-            FLAG_NUMBER = 1;
-        break;
-    }
-    mpz_mod(number, number, EC.n);
-    switch(argv[2][0])    {
-        case '+':
-            if(FLAG_NUMBER)    {
-                Scalar_Multiplication(G, &B, number);
-            }
-            Point_Addition(&A, &B, &C);
-        break;
-        case '-':
-            if(FLAG_NUMBER)    {
-                Scalar_Multiplication(G, &B, number);
-            }
-            Point_Negation(&B, &C);
-            mpz_set(B.x, C.x);
-            mpz_set(B.y, C.y);
-            Point_Addition(&A, &B, &C);
-        break;
-        case '/':
-            if(!FLAG_NUMBER)    {
-                printf("We don't know how to divide 2 publickeys, we need an escalar number\n");
-                exit(0);
-            }
-            else    {
-                mpz_invert(inversemultiplier, number, EC.n);
-                Scalar_Multiplication_custom(A, &C, inversemultiplier);
-            }
-        break;
-        case 'x':
-            if(!FLAG_NUMBER)    {
-                printf("We don't know how to multiply 2 publickeys, we need an escalar number\n");
-                exit(0);
-            }
-            else    {
-                Scalar_Multiplication_custom(A, &C, number);
-            }
+		
         break;		
 	}
 	generate_strpublickey(&C,true,str_publickey);

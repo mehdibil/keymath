@@ -1,6 +1,12 @@
 #include <gmp.h>
 #include "gmpecc.h"
 
+void Point_Subtraction(const struct Point *P, const struct Point *Q, struct Point *R) {
+    mpz_sub(R->x, P->x, Q->x);
+    mpz_sub(R->y, P->y, Q->y);
+}
+
+
 bool Point_Equals(const struct Point *P, const struct Point *Q) {
     return (mpz_cmp(P->x, Q->x) == 0) && (mpz_cmp(P->y, Q->y) == 0);
 }

@@ -1,15 +1,17 @@
 #ifndef GMPECC_H
 #define GMPECC_H
 
+#include <stdbool.h>
+#include <gmp.h>
 
 struct Point {
-	mpz_t x;
-	mpz_t y;
+    mpz_t x;
+    mpz_t y;
 };
 
 struct Elliptic_Curve {
-	mpz_t p;
-	mpz_t n;
+    mpz_t p;
+    mpz_t n;
 };
 
 void Point_Doubling(struct Point *P, struct Point *R);
@@ -22,6 +24,5 @@ bool Point_Equals(const struct Point *P, const struct Point *Q);
 extern struct Elliptic_Curve EC;
 extern struct Point G;
 extern struct Point DoublingG[256];
-
 
 #endif

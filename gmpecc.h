@@ -20,6 +20,7 @@ void Scalar_Multiplication(struct Point P, struct Point *R, mpz_t m);
 void Point_Negation(struct Point *A, struct Point *S);
 void init_doublingG(struct Point *P);
 bool Point_Equals(const struct Point *P, const struct Point *Q);
+void Point_Subtraction(const struct Point *P, const struct Point *Q, struct Point *R);  // Add this line
 
 extern struct Elliptic_Curve EC;
 extern struct Point G;

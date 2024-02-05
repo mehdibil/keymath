@@ -185,51 +185,52 @@ void set_publickey(char *param, struct Point *publickey)  {
             mpz_set_str(publickey->x, dest+2, 16);
             break;
         case 130:
-			memcpy(hexvalue,dest+2,64);
-			mpz_set_str(publickey->x,hexvalue,16);
-			memcpy(hexvalue,dest+66,64);
-			mpz_set_str(publickey->y,hexvalue,16);
-		break;
-	}
-	// Check if the public key is within the specified range
-    if (mpz_cmp(publickey->x, EC_constant_min_publickey) < 0 ||
-        mpz_cmp(publickey->x, EC_constant_max_publickey) > 0) {
+            memcpy(hexvalue, dest+2, 64);
+            mpz_set_str(publickey->x, hexvalue, 16);
+            memcpy(hexvalue, dest+66, 64);
+            mpz_set_str(publickey->y, hexvalue, 16);
+            break;
+    }
+
+    // Check if the public key is within the specified range
+    if (mpz_cmp(publickey->x, EC_constant_min_publickey_mpz) < 0 ||
+        mpz_cmp(publickey->x, EC_constant_max_publickey_mpz) > 0) {
         fprintf(stderr, "[E] Public key is outside the allowed range\n");
         exit(0);
-	    }
-	
-	if(mpz_cmp_ui(publickey->y,0) == 0)	{
-		mpz_t mpz_aux,mpz_aux2,Ysquared;
-		mpz_init(mpz_aux);
-		mpz_init(mpz_aux2);
-		mpz_init(Ysquared);
-		mpz_pow_ui(mpz_aux,publickey->x,3);
-		mpz_add_ui(mpz_aux2,mpz_aux,7);
-		mpz_mod(Ysquared,mpz_aux2,EC.p);
-		mpz_add_ui(mpz_aux,EC.p,1);
-		mpz_fdiv_q_ui(mpz_aux2,mpz_aux,4);
-		mpz_powm(publickey->y,Ysquared,mpz_aux2,EC.p);
-		mpz_sub(mpz_aux, EC.p,publickey->y);
-		switch(dest[1])	{
-			case '2':
-				if(mpz_tstbit(publickey->y, 0) == 1)	{
-					mpz_set(publickey->y,mpz_aux);
-				}
-			break;
-			case '3':
-				if(mpz_tstbit(publickey->y, 0) == 0)	{
-					mpz_set(publickey->y,mpz_aux);
-				}
-			break;
-			default:
-				fprintf(stderr,"[E] Some invalid bit in the publickey: %s\n",dest);
-				exit(0);
-			break;
-		}
-		mpz_clear(mpz_aux);
-		mpz_clear(mpz_aux2);
-		mpz_clear(Ysquared);
-	}
+    }
+
+    if (mpz_cmp_ui(publickey->y, 0) == 0)  {
+        mpz_t mpz_aux, mpz_aux2, Ysquared;
+        mpz_init(mpz_aux);
+        mpz_init(mpz_aux2);
+        mpz_init(Ysquared);
+        mpz_pow_ui(mpz_aux, publickey->x, 3);
+        mpz_add_ui(mpz_aux2, mpz_aux, 7);
+        mpz_mod(Ysquared, mpz_aux2, EC.p);
+        mpz_add_ui(mpz_aux, EC.p, 1);
+        mpz_fdiv_q_ui(mpz_aux2, mpz_aux, 4);
+        mpz_powm(publickey->y, Ysquared, mpz_aux2, EC.p);
+        mpz_sub(mpz_aux, EC.p, publickey->y);
+        switch(dest[1])  {
+            case '2':
+                if(mpz_tstbit(publickey->y, 0) == 1)  {
+                    mpz_set(publickey->y, mpz_aux);
+                }
+                break;
+            case '3':
+                if(mpz_tstbit(publickey->y, 0) == 0)  {
+                    mpz_set(publickey->y, mpz_aux);
+                }
+                break;
+            default:
+                fprintf(stderr, "[E] Some invalid bit in the publickey: %s\n", dest);
+                exit(0);
+                break;
+        }
+        mpz_clear(mpz_aux);
+        mpz_clear(mpz_aux2);
+        mpz_clear(Ysquared);
+    }
 	free(dest);
 }
 

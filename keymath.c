@@ -192,10 +192,10 @@ void set_publickey(char *param, struct Point *publickey)  {
             break;
     }
 
-   // Check if the public key is within the specified range
-if ((mpz_cmp(publickey->x, EC_constant_min_publickey_mpz) < 0 ||
-     mpz_cmp(publickey->x, EC_constant_max_publickey_mpz) > 0) &&
-    (len != 66 || (len == 66 && dest[0] != '0' && dest[1] != '2'))) {
+   // Check if the public key is within the specified range for addition
+if ((mpz_cmp(publickey->x, EC_constant_min_publickey_mpz) <= 0 ||
+     mpz_cmp(publickey->x, EC_constant_max_publickey_mpz) >= 0) &&
+    (len != 66 || (len == 66 && dest[0] != '0' && dest[1] != '2') || argv[2][0] == '+')) {
     fprintf(stderr, "[E] Public key is outside the allowed range\n");
     exit(0);
 }

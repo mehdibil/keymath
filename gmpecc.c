@@ -1,6 +1,10 @@
 #include <gmp.h>
 #include "gmpecc.h"
 
+bool Point_Equals(const struct Point *P, const struct Point *Q) {
+    return (mpz_cmp(P->x, Q->x) == 0) && (mpz_cmp(P->y, Q->y) == 0);
+}
+
 void Point_Doubling(struct Point *P, struct Point *R)	{
 	mpz_t slope, temp;
 	mpz_init(temp);

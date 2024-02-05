@@ -67,11 +67,11 @@ int main(int argc, char **argv)  {
     mpz_init(number);
     mpz_init(inversemultiplier);
 
-    if(argc < 4)    {
-        printf("Missing parameters\n");
+    if(argc < 2)    {
+        printf("Missing starting public key parameter\n");
         exit(0);
     }
-
+ // Parse the starting public key
     switch(strlen(argv[1]))    {
         case 66:
         case 130:
@@ -82,6 +82,29 @@ int main(int argc, char **argv)  {
             exit(0);
         break;
     }
+     // Define the target public key
+
+    struct Point Target;
+    mpz_init_set_str(Target.x, "target_public_key_x_hex", 16);
+    mpz_init_set_str(Target.y, "target_public_key_y_hex", 16);
+
+    printf("Starting with public key: %s\n", argv[1]);
+
+    // Perform subtraction until the target is reached
+    Scalar_Subtraction_Until_Target(G, &A, Target);
+
+    generate_strpublickey(&A, true, str_publickey);
+    printf("Final public key: %s\n", str_publickey);
+
+    mpz_clear(Target.x);
+    mpz_clear(Target.y);
+    // ... (existing code)
+
+    return 0;
+}
+
+// ... (existing code)
+
     switch(strlen(argv[3]))    {
         case 66:
             if(argv[3][0] == '0' && argv[3][1] == 'x')    {
@@ -273,25 +296,24 @@ void Scalar_Subtraction_Until_Target(struct Point P, struct Point *R, struct Poi
     mpz_init(m);
     mpz_set_ui(m, 0);
 
-    while (true) {
+    int iterations = 0;
+
+    while (!Point_Equals(R, &Target)) {
         Scalar_Multiplication_custom(P, R, m);
-        if (Point_Equals(R, &Target)) {
-            // The result matches the target public key
-            break;
-        }
+        iterations++;
 
-        // Decrement the scalar value for the next iteration
-        mpz_sub_ui(m, m, 1);
+        // Print intermediate results
+        gmp_printf("Iteration %d: Scalar = %Zd, Result = (%Zd, %Zd)\n", iterations, m, R->x, R->y);
 
-        // Check if m becomes negative (no solution exists)
-        if (mpz_sgn(m) < 0) {
-            printf("No solution found.\n");
-            exit(0);
-        }
+        // Increment the scalar value for the next iteration
+        mpz_add_ui(m, m, 1);
     }
+
+    printf("Target public key reached in %d iterations with scalar value %Zd.\n", iterations, m);
 
     mpz_clear(m);
 }
+
 
 bool Point_Equals(const struct Point *P1, const struct Point *P2) {
     return mpz_cmp(P1->x, P2->x) == 0 && mpz_cmp(P1->y, P2->y) == 0;

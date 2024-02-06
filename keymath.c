@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-void Scalar_Subtraction_Until_Target(struct Point P, struct Point *R, struct Point Target) {
+void Scalar_Subtraction_Until_Target(struct Point P, struct Point *R, struct Point FinalPublicKey) {
     mpz_init_set_ui(R->x, 0);
     mpz_init_set_ui(R->y, 0);
 
@@ -112,21 +112,20 @@ void Scalar_Subtraction_Until_Target(struct Point P, struct Point *R, struct Poi
     mpz_init(scalar);
 
     int iterations = 0;
-
-        while (iterations < 10000) {
-        Point_Subtraction(R, &P, &A);
+    while (iterations < 10000) {
+        Point_Subtraction(&P, R, &A);
         mpz_invert(scalar, A.x, EC.p);
         Scalar_Multiplication_custom(A, &A, scalar);
         Point_Addition(&A, R, R);
         iterations++;
 
-        if (Point_Equals(R, &Target)) {
-            gmp_printf("Target public key reached in %d iterations with scalar value %Zd.\n", iterations, scalar);
+        if (Point_Equals(R, &FinalPublicKey)) {
+            gmp_printf("Final public key reached in %d iterations with scalar value %Zd.\n", iterations, scalar);
             break;
         }
     }
 
-if (iterations >= 10000) {
+    if (iterations >= 10000) {
         printf("No solution found.\n");
     }
 

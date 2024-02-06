@@ -112,20 +112,25 @@ void Scalar_Subtraction_Until_Target(struct Point P, struct Point *R, struct Poi
     mpz_inits(scalar, inverseMultiplier, NULL);
 
     int iterations = 0;
-    while (iterations < 10000) {
-        Point_Subtraction(&P, R, &A);
-        mpz_invert(inverseMultiplier, A.x, EC.p);
-        Scalar_Multiplication_custom(A, &A, inverseMultiplier);
-        Point_Addition(&A, R, R);
-        iterations++;
+   while (iterations < 10000) {
+    Point_Subtraction(&P, R, &A);
+    mpz_invert(inverseMultiplier, A.x, EC.p);
+    Scalar_Multiplication_custom(A, &A, inverseMultiplier);
+    Point_Addition(&A, R, R);
+    iterations++;
 
-        gmp_printf("Iteration %d: Scalar = %Zd, Result = (%Zd, %Zd)\n", iterations, scalar, R->x, R->y);
+    // Update scalar value
+    mpz_add_ui(scalar, scalar, 1);
 
-        if (Point_Equals(R, &FinalPublicKey)) {
-            gmp_printf("Target public key reached in %d iterations with scalar value %Zd.\n", iterations, scalar);
-            break;
-        }
+    gmp_printf("Iteration %d: Scalar = %Zd, Result = (%Zd, %Zd)\n", iterations, scalar, R->x, R->y);
+
+    if (Point_Equals(R, &FinalPublicKey)) {
+        gmp_printf("Target public key reached in %d iterations with scalar value %Zd.\n", iterations, scalar);
+        break;
     }
+}
+
+This should correctly update the scalar value during each iter
 
     if (iterations >= 10000) {
         printf("No solution found.\n");

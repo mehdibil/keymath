@@ -130,8 +130,6 @@ void Scalar_Subtraction_Until_Target(struct Point P, struct Point *R, struct Poi
     }
 }
 
-This should correctly update the scalar value during each iter
-
     if (iterations >= 10000) {
         printf("No solution found.\n");
     }

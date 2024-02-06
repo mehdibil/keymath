@@ -119,6 +119,8 @@ void Scalar_Subtraction_Until_Target(struct Point P, struct Point *R, struct Poi
         Point_Addition(&A, R, R);
         iterations++;
 
+        gmp_printf("Iteration %d: Scalar = %Zd, Result = (%Zd, %Zd)\n", iterations, scalar, R->x, R->y);
+
         if (Point_Equals(R, &FinalPublicKey)) {
             gmp_printf("Final public key reached in %d iterations with scalar value %Zd.\n", iterations, scalar);
             break;

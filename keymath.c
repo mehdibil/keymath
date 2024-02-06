@@ -114,7 +114,7 @@ void Scalar_Subtraction_Until_Target(struct Point P, struct Point *R, struct Poi
     int iterations = 0;
 
         while (iterations < 10000) {
-        Point_Subtraction(&P, R, &A);
+        Point_Subtraction(R, &P, &A);
         mpz_invert(scalar, A.x, EC.p);
         Scalar_Multiplication_custom(A, &A, scalar);
         Point_Addition(&A, R, R);

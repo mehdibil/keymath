@@ -69,7 +69,7 @@ int main(int argc, char **argv)  {
     set_publickey(argv[1], &A);
     set_publickey(argv[2], &B);
 
-    find_target_public_key(&A, &C, B.x); // Find the public key by adding A to itself until it matches B
+    find_target_public_key(&A, &C, B.x); // Find the public key by multiplying A by the scalar B.x
     generate_strpublickey(&C, true, str_publickey);
     printf("Result: %s\n\n", str_publickey);
 

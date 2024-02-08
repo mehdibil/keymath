@@ -183,16 +183,5 @@ void Scalar_Multiplication_custom(struct Point P, struct Point *R, mpz_t m)  {
 }
 
 void find_target_public_key(struct Point *publickey, struct Point *target, mpz_t scalar) {
-    mpz_set(target->x, publickey->x);
-    mpz_set(target->y, publickey->y);
-    struct Point temp;
-    mpz_init(temp.x);
-    mpz_init(temp.y);
-    while (mpz_cmp(target->x, publickey->x) != 0 || mpz_cmp(target->y, publickey->y) != 0) {
-        Point_Addition(publickey, &temp, target);
-        mpz_set(target->x, temp.x);
-        mpz_set(target->y, temp.y);
-    }
-    mpz_clear(temp.x);
-    mpz_clear(temp.y);
+    Scalar_Multiplication_custom(*publickey, target, scalar);
 }

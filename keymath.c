@@ -62,7 +62,7 @@ int main(int argc, char **argv)  {
     mpz_init(inversemultiplier);
 
     if(argc < 3) {
-        printf("Usage: %s <publickey> <target_publickey>\n", argv[0]);
+        printf("Usage: %s <starting_publickey> <target_publickey>\n", argv[0]);
         exit(0);
     }
 
